@@ -12,6 +12,11 @@ const routes = [
     component: Home,
   },
   {
+    path: '/file-management',
+    name: 'FileManagement',
+    component: () => import('../views/FileManagement.vue'),
+  },
+  {
     path: '/history',
     name: 'History',
     component: () => import('../views/History.vue'),

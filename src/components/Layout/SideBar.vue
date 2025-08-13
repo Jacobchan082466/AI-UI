@@ -17,6 +17,12 @@
         <template #title>拍摄</template>
       </el-menu-item>
 
+      <!-- 文件管理 -->
+      <el-menu-item index="/file-management">
+        <el-icon><Folder /></el-icon>
+        <template #title>文件管理</template>
+      </el-menu-item>
+
       <!-- 识别复检 -->
       <el-menu-item index="/review">
         <el-icon><Search /></el-icon>
@@ -35,6 +41,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { Camera, Search, Clock, Folder } from '@element-plus/icons-vue'
 
 // 定义props
 defineProps({

@@ -28,3 +28,20 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Storage and upload directories
+storage/
+uploads/
+files/
+images/
+documents/
+videos/
+audio/
+temp/
+cache/
+
+# User uploaded content
+public/uploads/
+public/storage/
+src/assets/uploads/
+src/assets/storage/
