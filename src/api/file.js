@@ -9,8 +9,8 @@ export function getFileList(params) {
       page: params.page,
       pageSize: params.pageSize,
       category: params.category || undefined,
-      tags: params.tags || undefined
-    }
+      tags: params.tags || undefined,
+    },
   })
 }
 
@@ -18,7 +18,7 @@ export function getFileList(params) {
 export function getFileDetail(fileId) {
   return request({
     url: `/api/file/info/${fileId}`,
-    method: 'get'
+    method: 'get',
   })
 }
 
@@ -26,14 +26,14 @@ export function getFileDetail(fileId) {
 export function deleteFile(fileId) {
   return request({
     url: `/api/file/${fileId}`,
-    method: 'delete'
+    method: 'delete',
   })
 }
 
 // 批量删除文件
 export function batchDeleteFiles(fileIds) {
   // 由于后端没有批量删除接口，这里使用Promise.all来并行删除
-  const promises = fileIds.map(id => deleteFile(id))
+  const promises = fileIds.map((id) => deleteFile(id))
   return Promise.all(promises)
 }
 
@@ -52,8 +52,8 @@ export function uploadFile(file, tags = []) {
     method: 'post',
     data: formData,
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+      'Content-Type': 'multipart/form-data',
+    },
   })
 }
 
@@ -62,6 +62,6 @@ export function downloadFile(fileId) {
   return request({
     url: `/api/file/${fileId}`,
     method: 'get',
-    responseType: 'blob'
+    responseType: 'blob',
   })
 }

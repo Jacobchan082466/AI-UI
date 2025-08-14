@@ -114,7 +114,12 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="uploadTime" label="上传时间" width="180" class-name="upload-time-column">
+        <el-table-column
+          prop="uploadTime"
+          label="上传时间"
+          width="180"
+          class-name="upload-time-column"
+        >
           <template #default="{ row }">
             {{ formatDate(row.uploadTime) }}
           </template>
@@ -190,11 +195,7 @@
     </div>
 
     <!-- 文件详情对话框 -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      title="文件详情"
-      width="700px"
-    >
+    <el-dialog v-model="detailDialogVisible" title="文件详情" width="700px">
       <div class="file-detail" v-if="currentFile">
         <el-descriptions :column="2" border>
           <el-descriptions-item label="文件名">
@@ -225,8 +226,31 @@
           <div v-if="isImage(currentFile.fileType)" class="image-preview">
             <img :src="getImageUrl(currentFile.filePath)" alt="文件预览" class="preview-image" />
           </div>
+          <div v-else-if="isVideo(currentFile.fileType)" class="video-preview">
+            <video controls class="preview-video">
+              <source
+                :src="getImageUrl(currentFile.filePath)"
+                :type="getVideoMimeType(currentFile.extension)"
+              />
+              您的浏览器不支持视频播放
+            </video>
+          </div>
+          <div v-else-if="isAudio(currentFile.fileType)" class="audio-preview">
+            <audio controls class="preview-audio">
+              <source
+                :src="getImageUrl(currentFile.filePath)"
+                :type="getAudioMimeType(currentFile.extension)"
+              />
+              您的浏览器不支持音频播放
+            </audio>
+          </div>
           <div v-else-if="isPDF(currentFile.fileType)" class="pdf-preview">
-            <iframe :src="getImageUrl(currentFile.filePath)" width="100%" height="400" frameborder="0"></iframe>
+            <iframe
+              :src="getImageUrl(currentFile.filePath)"
+              width="100%"
+              height="400"
+              frameborder="0"
+            ></iframe>
           </div>
           <div v-else class="file-info-preview">
             <el-icon :class="getFileIcon(currentFile.fileType)" class="preview-icon" />
@@ -245,11 +269,7 @@
     </el-dialog>
 
     <!-- 上传文件对话框 -->
-    <el-dialog
-      v-model="uploadDialogVisible"
-      title="上传文件"
-      width="500px"
-    >
+    <el-dialog v-model="uploadDialogVisible" title="上传文件" width="500px">
       <el-upload
         class="upload-demo"
         drag
@@ -258,13 +278,9 @@
         multiple
       >
         <el-icon class="el-icon--upload"><Upload /></el-icon>
-        <div class="el-upload__text">
-          将文件拖到此处，或<em>点击上传</em>
-        </div>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
         <template #tip>
-          <div class="el-upload__tip">
-            只能上传jpg/png/gif/pdf/doc/docx/xls/xlsx文件，且不超过10MB
-          </div>
+          <div class="el-upload__tip">支持图片、文档、视频、音频文件，且不超过100MB</div>
         </template>
       </el-upload>
       <template #footer>
@@ -279,28 +295,21 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {
-  Upload,
-  Search,
-  Refresh,
-  View,
-  Download,
-  Delete
-} from '@element-plus/icons-vue'
+import { Upload, Search, Refresh, View, Download, Delete } from '@element-plus/icons-vue'
 import {
   getFileList,
   deleteFile,
   getFileDetail,
   batchDeleteFiles,
   downloadFile,
-  uploadFile
+  uploadFile,
 } from '@/api/file'
 
 // 响应式数据
 const searchForm = reactive({
   fileName: '',
   fileType: '',
-  uploadDate: []
+  uploadDate: [],
 })
 
 const fileList = ref([])
@@ -311,7 +320,7 @@ const searchTimeout = ref(null)
 const pagination = reactive({
   currentPage: 1,
   pageSize: 20,
-  total: 0
+  total: 0,
 })
 
 const detailDialogVisible = ref(false)
@@ -321,15 +330,19 @@ const uploadDialogVisible = ref(false)
 // 移除未使用的uploadHeaders
 
 // 监听搜索条件变化，添加防抖
-watch(() => [searchForm.fileName, searchForm.fileType, searchForm.uploadDate], () => {
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-  searchTimeout.value = setTimeout(() => {
-    pagination.currentPage = 1
-    fetchFileList()
-  }, 500)
-}, { deep: true })
+watch(
+  () => [searchForm.fileName, searchForm.fileType, searchForm.uploadDate],
+  () => {
+    if (searchTimeout.value) {
+      clearTimeout(searchTimeout.value)
+    }
+    searchTimeout.value = setTimeout(() => {
+      pagination.currentPage = 1
+      fetchFileList()
+    }, 500)
+  },
+  { deep: true },
+)
 
 // 生命周期
 onMounted(() => {
@@ -343,7 +356,7 @@ const fetchFileList = async () => {
 
     const params = {
       page: pagination.currentPage,
-      pageSize: pagination.pageSize
+      pageSize: pagination.pageSize,
     }
 
     // 只有当有搜索条件时才添加参数
@@ -366,7 +379,7 @@ const fetchFileList = async () => {
 
     if (response.code === 200 && response.data) {
       // 转换后端数据结构为前端需要的格式
-      fileList.value = response.data.files.map(file => ({
+      fileList.value = response.data.files.map((file) => ({
         id: file.file_id,
         fileName: file.original_name,
         fileSize: file.file_size,
@@ -376,7 +389,7 @@ const fetchFileList = async () => {
         filePath: file.access_url,
         category: file.category,
         tags: file.tags || [],
-        extension: file.extension
+        extension: file.extension,
       }))
 
       pagination.total = response.data.total || fileList.value.length
@@ -391,7 +404,7 @@ const fetchFileList = async () => {
       message: error.message,
       response: error.response,
       request: error.request,
-      config: error.config
+      config: error.config,
     })
     ElMessage.error('获取文件列表失败：' + (error.message || '网络错误'))
   } finally {
@@ -434,7 +447,7 @@ const handleView = async (file) => {
     if (response.code === 200 && response.data) {
       currentFile.value = {
         ...file,
-        ...response.data
+        ...response.data,
       }
       detailDialogVisible.value = true
     } else {
@@ -479,7 +492,7 @@ const handleDelete = async (file) => {
     await ElMessageBox.confirm('确定要删除这个文件吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     })
 
     const response = await deleteFile(file.id)
@@ -504,13 +517,17 @@ const handleBatchDelete = async () => {
   }
 
   try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedFiles.value.length} 个文件吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${selectedFiles.value.length} 个文件吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
 
-    const fileIds = selectedFiles.value.map(file => file.id)
+    const fileIds = selectedFiles.value.map((file) => file.id)
     await batchDeleteFiles(fileIds)
 
     ElMessage.success('批量删除成功')
@@ -531,11 +548,15 @@ const handleBatchDownload = async () => {
   }
 
   try {
-    await ElMessageBox.confirm(`确定要下载选中的 ${selectedFiles.value.length} 个文件吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      `确定要下载选中的 ${selectedFiles.value.length} 个文件吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      },
+    )
 
     for (const file of selectedFiles.value) {
       await handleDownload(file)
@@ -555,17 +576,46 @@ const handleUpload = () => {
 }
 
 const beforeUpload = (file) => {
-  const isValidType = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf',
-                      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type)
-  const isLt10M = file.size / 1024 / 1024 < 10
+  const isValidType = [
+    // 图片格式
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/bmp',
+    'image/webp',
+    // 文档格式
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+    // 视频格式
+    'video/mp4',
+    'video/avi',
+    'video/mov',
+    'video/wmv',
+    'video/flv',
+    'video/webm',
+    'video/x-msvideo',
+    'video/quicktime',
+    'video/x-ms-wmv',
+    // 音频格式
+    'audio/mpeg',
+    'audio/wav',
+    'audio/flac',
+    'audio/aac',
+    'audio/ogg',
+  ].includes(file.type)
+
+  const isLt100M = file.size / 1024 / 1024 < 100
 
   if (!isValidType) {
-    ElMessage.error('只能上传指定格式的文件!')
+    ElMessage.error('只能上传指定格式的文件! 支持：图片、文档、视频、音频')
     return false
   }
-  if (!isLt10M) {
-    ElMessage.error('文件大小不能超过 10MB!')
+  if (!isLt100M) {
+    ElMessage.error('文件大小不能超过 100MB!')
     return false
   }
   return true
@@ -615,33 +665,33 @@ const getFileTypeFromExtension = (extension) => {
 
 const getFileIcon = (fileType) => {
   const iconMap = {
-    'image': 'Picture',
-    'document': 'Document',
-    'video': 'VideoCamera',
-    'audio': 'Headphone',
-    'other': 'Files'
+    image: 'Picture',
+    document: 'Document',
+    video: 'VideoCamera',
+    audio: 'Headphone',
+    other: 'Files',
   }
   return iconMap[fileType] || 'Files'
 }
 
 const getFileTypeTag = (fileType) => {
   const tagMap = {
-    'image': 'success',
-    'document': 'primary',
-    'video': 'warning',
-    'audio': 'info',
-    'other': 'info'
+    image: 'success',
+    document: 'primary',
+    video: 'warning',
+    audio: 'info',
+    other: 'info',
   }
   return tagMap[fileType] || 'info'
 }
 
 const getFileTypeName = (fileType) => {
   const nameMap = {
-    'image': '图片',
-    'document': '文档',
-    'video': '视频',
-    'audio': '音频',
-    'other': '其他'
+    image: '图片',
+    document: '文档',
+    video: '视频',
+    audio: '音频',
+    other: '其他',
   }
   return nameMap[fileType] || '其他'
 }
@@ -663,8 +713,19 @@ const isImage = (fileType) => {
   return fileType === 'image'
 }
 
+const isVideo = (fileType) => {
+  return fileType === 'video'
+}
+
+const isAudio = (fileType) => {
+  return fileType === 'audio'
+}
+
 const isPDF = (fileType) => {
-  return fileType === 'document' && (fileType.toLowerCase().endsWith('pdf') || fileType.toLowerCase().endsWith('pdfx'))
+  return (
+    fileType === 'document' &&
+    (fileType.toLowerCase().endsWith('pdf') || fileType.toLowerCase().endsWith('pdfx'))
+  )
 }
 
 // 获取图片URL（用于预览）
@@ -678,6 +739,25 @@ const getImageUrl = (filePath) => {
   }
 
   return filePath
+}
+
+const getVideoMimeType = (extension) => {
+  if (extension === 'mp4') return 'video/mp4'
+  if (extension === 'avi') return 'video/x-msvideo'
+  if (extension === 'mov') return 'video/quicktime'
+  if (extension === 'wmv') return 'video/x-ms-wmv'
+  if (extension === 'flv') return 'video/x-flv'
+  if (extension === 'webm') return 'video/webm'
+  return 'video/mp4' // 默认类型
+}
+
+const getAudioMimeType = (extension) => {
+  if (extension === 'mp3') return 'audio/mpeg'
+  if (extension === 'wav') return 'audio/wav'
+  if (extension === 'flac') return 'audio/flac'
+  if (extension === 'aac') return 'audio/aac'
+  if (extension === 'ogg') return 'audio/ogg'
+  return 'audio/mpeg' // 默认类型
 }
 </script>
 
@@ -1502,5 +1582,75 @@ const getImageUrl = (filePath) => {
     padding: 6px 8px;
     margin: 0;
   }
+}
+
+/* 文件预览样式 */
+.file-preview {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.file-preview h4 {
+  margin: 0 0 16px 0;
+  color: #303133;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.image-preview {
+  text-align: center;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.video-preview {
+  text-align: center;
+}
+
+.preview-video {
+  width: 100%;
+  max-width: 600px;
+  max-height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.audio-preview {
+  text-align: center;
+  padding: 20px;
+}
+
+.preview-audio {
+  width: 100%;
+  max-width: 400px;
+}
+
+.pdf-preview {
+  text-align: center;
+}
+
+.file-info-preview {
+  text-align: center;
+  padding: 40px 20px;
+  color: #909399;
+}
+
+.preview-icon {
+  font-size: 60px;
+  margin-bottom: 16px;
+  color: #c0c4cc;
+}
+
+.file-info-preview p {
+  margin: 8px 0;
+  font-size: 14px;
 }
 </style>
