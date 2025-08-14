@@ -11,12 +11,14 @@
 
     <!-- 搜索栏 -->
     <div class="search-bar">
-      <el-row :gutter="20">
-        <el-col :span="6">
+      <div class="search-grid">
+        <div class="search-item">
+          <label class="search-label">文件名</label>
           <el-input
             v-model="searchForm.fileName"
             placeholder="请输入文件名（支持模糊查询）"
             clearable
+            size="default"
             @keyup.enter="handleSearch"
             @clear="handleSearch"
           >
@@ -24,9 +26,18 @@
               <el-icon><Search /></el-icon>
             </template>
           </el-input>
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="searchForm.fileType" placeholder="文件类型" clearable @change="handleSearch">
+        </div>
+
+        <div class="search-item">
+          <label class="search-label">文件类型</label>
+          <el-select
+            v-model="searchForm.fileType"
+            placeholder="请选择文件类型"
+            clearable
+            size="default"
+            style="width: 100%"
+            @change="handleSearch"
+          >
             <el-option label="全部类型" value="" />
             <el-option label="图片" value="image" />
             <el-option label="文档" value="document" />
@@ -34,8 +45,10 @@
             <el-option label="音频" value="audio" />
             <el-option label="其他" value="other" />
           </el-select>
-        </el-col>
-        <el-col :span="6">
+        </div>
+
+        <div class="search-item">
+          <label class="search-label">上传时间</label>
           <el-date-picker
             v-model="searchForm.uploadDate"
             type="daterange"
@@ -44,20 +57,26 @@
             end-placeholder="结束日期"
             format="YYYY-MM-DD"
             value-format="YYYY-MM-DD"
+            size="default"
+            style="width: 100%"
             @change="handleSearch"
           />
-        </el-col>
-        <el-col :span="6">
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon>
-            重置
-          </el-button>
-        </el-col>
-      </el-row>
+        </div>
+
+        <div class="search-item search-buttons-container">
+          <label class="search-label">操作</label>
+          <div class="search-buttons">
+            <el-button type="primary" @click="handleSearch" size="default">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="handleReset" size="default">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 文件列表表格 -->
@@ -81,13 +100,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="fileSize" label="文件大小" width="120">
+        <el-table-column prop="fileSize" label="文件大小" width="120" class-name="file-size-column">
           <template #default="{ row }">
             {{ formatFileSize(row.fileSize) }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="fileType" label="文件类型" width="100">
+        <el-table-column prop="fileType" label="文件类型" width="100" class-name="file-type-column">
           <template #default="{ row }">
             <el-tag :type="getFileTypeTag(row.fileType)">
               {{ getFileTypeName(row.fileType) }}
@@ -95,13 +114,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="uploadTime" label="上传时间" width="180">
+        <el-table-column prop="uploadTime" label="上传时间" width="180" class-name="upload-time-column">
           <template #default="{ row }">
             {{ formatDate(row.uploadTime) }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="100" class-name="status-column">
           <template #default="{ row }">
             <el-tag :type="row.status === 'success' ? 'success' : 'danger'">
               {{ row.status === 'success' ? '成功' : '失败' }}
@@ -109,32 +128,37 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right" class-name="actions-column">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              type="primary"
-              @click="handleView(row)"
-            >
-              <el-icon><View /></el-icon>
-              查看
-            </el-button>
-            <el-button
-              size="small"
-              type="success"
-              @click="handleDownload(row)"
-            >
-              <el-icon><Download /></el-icon>
-              下载
-            </el-button>
-            <el-button
-              size="small"
-              type="danger"
-              @click="handleDelete(row)"
-            >
-              <el-icon><Delete /></el-icon>
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <el-button
+                size="small"
+                type="primary"
+                @click="handleView(row)"
+                class="action-btn view-btn"
+              >
+                <el-icon><View /></el-icon>
+                <span class="btn-text">查看</span>
+              </el-button>
+              <el-button
+                size="small"
+                type="success"
+                @click="handleDownload(row)"
+                class="action-btn download-btn"
+              >
+                <el-icon><Download /></el-icon>
+                <span class="btn-text">下载</span>
+              </el-button>
+              <el-button
+                size="small"
+                type="danger"
+                @click="handleDelete(row)"
+                class="action-btn delete-btn"
+              >
+                <el-icon><Delete /></el-icon>
+                <span class="btn-text">删除</span>
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -658,20 +682,22 @@ const getImageUrl = (filePath) => {
 </script>
 
 <style scoped>
+/* 基础样式优化 */
 .file-management {
   padding: 20px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 24px;
 }
 
 .page-header h2 {
@@ -681,44 +707,228 @@ const getImageUrl = (filePath) => {
   font-weight: 600;
 }
 
+/* 搜索栏样式优化 */
 .search-bar {
   background: #f8f9fa;
   padding: 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 24px;
   border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.table-container {
-  margin-bottom: 24px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  align-items: start;
 }
 
-.file-info {
+.search-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.search-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #606266;
+  margin-bottom: 4px;
+  line-height: 1;
+  white-space: nowrap;
+  height: 20px;
   display: flex;
   align-items: center;
-  padding: 8px 0;
 }
 
-.file-icon {
-  margin-right: 12px;
-  font-size: 20px;
+.search-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+/* 搜索按钮样式 */
+.search-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.search-buttons .el-button {
+  flex: 1;
+  min-width: 80px;
+  height: 40px !important;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  line-height: 40px;
+}
+
+.search-buttons .el-button--primary {
+  background: linear-gradient(135deg, #409eff 0%, #36a3f7 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+}
+
+.search-buttons .el-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.4);
+}
+
+.search-buttons .el-button:not(.el-button--primary) {
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  color: #606266;
+}
+
+.search-buttons .el-button:not(.el-button--primary):hover {
+  border-color: #409eff;
+  color: #409eff;
+  transform: translateY(-2px);
+}
+
+/* 搜索输入框美化 */
+.search-item :deep(.el-input__wrapper) {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  width: 100%;
+  height: 40px !important;
+  border: 1px solid #dcdfe6;
+  background-color: #fff;
+  line-height: 40px;
+}
+
+.search-item :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #c0c4cc;
+}
+
+.search-item :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  border-color: #409eff;
+}
+
+/* 搜索选择框美化 */
+.search-item :deep(.el-select) {
+  width: 100%;
+}
+
+.search-item :deep(.el-select .el-input__wrapper) {
+  border-radius: 8px;
+  width: 100%;
+  height: 40px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #dcdfe6;
+  background-color: #fff;
+  line-height: 40px;
+}
+
+.search-item :deep(.el-select .el-input__wrapper:hover) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #c0c4cc;
+}
+
+.search-item :deep(.el-select .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  border-color: #409eff;
+}
+
+/* 选择框下拉箭头美化 */
+.search-item :deep(.el-select .el-input__suffix) {
+  color: #c0c4cc;
+  transition: color 0.3s ease;
+}
+
+.search-item :deep(.el-select:hover .el-input__suffix) {
   color: #409eff;
 }
 
-.file-name {
-  color: #303133;
-  font-weight: 500;
-  word-break: break-all;
+/* 选择框选项美化 */
+.search-item :deep(.el-select-dropdown) {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e4e7ed;
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: center;
+.search-item :deep(.el-select-dropdown .el-select-dropdown__item) {
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+}
+
+.search-item :deep(.el-select-dropdown .el-select-dropdown__item:hover) {
+  background-color: #f5f7fa;
+  color: #409eff;
+}
+
+.search-item :deep(.el-select-dropdown .el-select-dropdown__item.selected) {
+  background-color: #ecf5ff;
+  color: #409eff;
+  font-weight: 500;
+}
+
+/* 日期选择器美化 */
+.search-item :deep(.el-date-editor) {
+  border-radius: 8px;
+  width: 100% !important;
+  height: 40px !important;
+}
+
+.search-item :deep(.el-date-editor .el-input__wrapper) {
+  border-radius: 8px;
+  width: 100%;
+  height: 40px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #dcdfe6;
+  background-color: #fff;
+  line-height: 40px;
+}
+
+.search-item :deep(.el-date-editor .el-input__wrapper:hover) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #c0c4cc;
+}
+
+.search-item :deep(.el-date-editor .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+  border-color: #409eff;
+}
+
+/* 强制统一所有输入元素的高度 */
+.search-item :deep(.el-input),
+.search-item :deep(.el-select),
+.search-item :deep(.el-date-editor) {
+  height: 40px !important;
+}
+
+.search-item :deep(.el-input__inner) {
+  height: 40px !important;
+  line-height: 40px !important;
+}
+
+/* 确保按钮高度也一致 */
+.search-buttons .el-button {
+  flex: 1;
+  min-width: 80px;
+  height: 40px !important;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  line-height: 40px;
+}
+
+/* 表格样式优化 */
+.table-container {
+  border-radius: 8px;
   margin-bottom: 24px;
-  padding: 16px 0;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
 .batch-actions {
@@ -743,72 +953,166 @@ const getImageUrl = (filePath) => {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.file-detail {
-  padding: 24px 0;
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  padding: 16px 0;
 }
 
-.file-preview {
-  margin-top: 24px;
-  text-align: center;
+/* 文件信息样式 */
+.file-info {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
 }
 
-.image-preview {
-  text-align: center;
-}
-
-.preview-image {
-  max-width: 100%;
-  max-height: 400px;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease;
-}
-
-.preview-image:hover {
-  transform: scale(1.02);
-}
-
-.pdf-preview {
-  width: 100%;
-  height: 400px;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-.pdf-preview iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.file-info-preview {
-  padding: 40px 20px;
-  border: 2px dashed #dcdfe6;
-  border-radius: 8px;
-  text-align: center;
-  color: #606266;
-  background: #fafafa;
-}
-
-.preview-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+.file-icon {
+  margin-right: 12px;
+  font-size: 20px;
   color: #409eff;
 }
 
-.file-info-preview p {
-  margin: 8px 0;
-  font-size: 14px;
+.file-name {
+  color: #303133;
+  font-weight: 500;
+  word-break: break-all;
 }
 
-.upload-demo {
-  text-align: center;
+/* 操作按钮样式 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.dialog-footer {
-  text-align: right;
+.action-btn {
+  min-width: auto;
+  padding: 6px 12px;
+}
+
+.btn-text {
+  margin-left: 4px;
+}
+
+/* 响应式列显示控制 */
+@media (max-width: 1200px) {
+  .file-size-column {
+    min-width: 100px;
+  }
+
+  .upload-time-column {
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 992px) {
+  .status-column {
+    display: none;
+  }
+
+  .upload-time-column {
+    min-width: 120px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .file-size-column {
+    display: none;
+  }
+
+  .file-type-column {
+    min-width: 80px;
+  }
+
+  .upload-time-column {
+    display: none;
+  }
+
+  .actions-column {
+    min-width: 120px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .btn-text {
+    display: none;
+  }
+
+  .action-btn .el-icon {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .file-type-column {
+    min-width: 60px;
+  }
+
+  .actions-column {
+    min-width: 100px;
+  }
+
+  .action-btn {
+    padding: 6px 8px;
+    min-height: 36px;
+  }
+
+  .action-btn .el-icon {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions-column {
+    min-width: 80px;
+  }
+
+  .action-btn {
+    padding: 4px 6px;
+    min-height: 32px;
+  }
+
+  .action-btn .el-icon {
+    font-size: 12px;
+  }
+}
+
+/* 打印时显示所有列 */
+@media print {
+  .file-size-column,
+  .file-type-column,
+  .upload-time-column,
+  .status-column {
+    display: table-cell !important;
+  }
+
+  .action-buttons {
+    flex-direction: row;
+  }
+
+  .btn-text {
+    display: inline !important;
+  }
 }
 
 /* 表格样式优化 */
@@ -836,25 +1140,9 @@ const getImageUrl = (filePath) => {
   font-weight: 500;
 }
 
-:deep(.el-button--primary) {
-  background: linear-gradient(135deg, #409eff 0%, #36a3f7 100%);
-  border: none;
-}
-
-:deep(.el-button--success) {
-  background: linear-gradient(135deg, #67c23a 0%, #5daf34 100%);
-  border: none;
-}
-
-:deep(.el-button--danger) {
-  background: linear-gradient(135deg, #f56c6c 0%, #e74c3c 100%);
-  border: none;
-}
-
 /* 搜索框样式优化 */
 :deep(.el-input__wrapper) {
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.el-select .el-input__wrapper) {
@@ -874,12 +1162,12 @@ const getImageUrl = (filePath) => {
   border-radius: 4px;
 }
 
-:deep(.el-pagination .el-pager li.is-active) {
-  background: linear-gradient(135deg, #409eff 0%, #36a3f7 100%);
-}
-
 /* 响应式设计 */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
+  .file-management {
+    padding: 18px;
+  }
+
   .search-bar .el-col {
     margin-bottom: 16px;
   }
@@ -887,33 +1175,162 @@ const getImageUrl = (filePath) => {
   .search-bar .el-col:last-child {
     margin-bottom: 0;
   }
+
+  .table-container {
+    margin: 0 -18px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .file-management {
+    padding: 16px;
+  }
+
+  .search-bar .el-col {
+    margin-bottom: 16px;
+  }
+
+  .search-bar .el-col:last-child {
+    margin-bottom: 0;
+  }
+
+  .page-header {
+    gap: 20px;
+  }
+
+  .page-header h2 {
+    font-size: 22px;
+  }
+
+  .table-container {
+    margin: 0 -16px;
+  }
+}
+
+@media (max-width: 992px) {
+  .file-management {
+    padding: 14px;
+  }
+
+  .search-bar {
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+
+  .search-row {
+    margin: 0;
+  }
+
+  .search-col {
+    margin-bottom: 20px;
+    padding: 0 8px;
+  }
+
+  .search-col:last-child {
+    margin-bottom: 0;
+  }
+
+  .search-buttons {
+    justify-content: center;
+  }
+
+  .search-buttons .el-button {
+    flex: none;
+    min-width: 100px;
+  }
+
+  .table-container {
+    margin: 0 -14px;
+    overflow-x: auto;
+  }
+
+  :deep(.el-table) {
+    min-width: 900px;
+  }
+
+  .batch-actions {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .batch-actions .el-button {
+    margin: 6px 6px 6px 0;
+  }
+
+  .pagination-container {
+    margin-bottom: 18px;
+  }
 }
 
 @media (max-width: 768px) {
   .file-management {
-    padding: 16px;
+    padding: 12px;
   }
 
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
   }
 
   .page-header h2 {
     font-size: 20px;
+    margin: 0;
+  }
+
+  .page-header .el-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .search-bar {
-    padding: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
   }
 
-  .search-bar .el-col {
-    margin-bottom: 12px;
+  .search-col {
+    margin-bottom: 16px;
+    padding: 0;
+  }
+
+  .search-col:last-child {
+    margin-bottom: 0;
+  }
+
+  .search-label {
+    font-size: 13px;
+  }
+
+  .search-buttons {
+    justify-content: stretch;
+  }
+
+  .search-buttons .el-button {
+    flex: 1;
+    min-width: auto;
+    height: 44px;
+  }
+
+  .table-container {
+    margin: 0 -12px;
+    border-radius: 0;
+  }
+
+  :deep(.el-table) {
+    min-width: 800px;
+    font-size: 14px;
+  }
+
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    padding: 12px 8px;
   }
 
   .batch-actions {
     padding: 16px;
+    margin-bottom: 16px;
   }
 
   .batch-actions .el-button {
@@ -921,18 +1338,31 @@ const getImageUrl = (filePath) => {
     width: 100%;
   }
 
-  .table-container {
-    overflow-x: auto;
+  .pagination-container {
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 16px;
   }
 
-  :deep(.el-table) {
-    min-width: 800px;
+  :deep(.el-pagination) {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  :deep(.el-pagination .el-pager li) {
+    margin: 0 2px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .file-management {
-    padding: 12px;
+    padding: 10px;
+  }
+
+  .page-header {
+    padding-bottom: 10px;
+    margin-bottom: 16px;
   }
 
   .page-header h2 {
@@ -940,11 +1370,137 @@ const getImageUrl = (filePath) => {
   }
 
   .search-bar {
-    padding: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .search-col {
+    margin-bottom: 16px;
+  }
+
+  .search-label {
+    font-size: 12px;
+  }
+
+  .search-item :deep(.el-input),
+  .search-item :deep(.el-select),
+  .search-item :deep(.el-date-editor) {
+    width: 100%;
+  }
+
+  .search-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-buttons .el-button {
+    width: 100%;
+    justify-content: center;
+    height: 44px;
+  }
+
+  .table-container {
+    margin: 0 -10px;
+  }
+
+  :deep(.el-table) {
+    min-width: 700px;
+    font-size: 13px;
+  }
+
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    padding: 8px 6px;
+  }
+
+  .batch-actions {
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  .pagination-container {
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  :deep(.el-pagination) {
+    font-size: 14px;
+  }
+
+  :deep(.el-pagination .btn-prev),
+  :deep(.el-pagination .btn-next) {
+    padding: 8px 12px;
+  }
+
+  :deep(.el-pagination .el-pager li) {
+    padding: 8px 10px;
+    margin: 0 1px;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-management {
+    padding: 8px;
+  }
+
+  .page-header {
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  .page-header h2 {
+    font-size: 16px;
+  }
+
+  .search-bar {
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+
+  .search-col {
+    margin-bottom: 12px;
+  }
+
+  .search-label {
+    font-size: 11px;
+  }
+
+  .table-container {
+    margin: 0 -8px;
+  }
+
+  :deep(.el-table) {
+    min-width: 600px;
+    font-size: 12px;
+  }
+
+  :deep(.el-table th),
+  :deep(.el-table td) {
+    padding: 6px 4px;
   }
 
   .batch-actions {
     padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .pagination-container {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  :deep(.el-pagination) {
+    font-size: 13px;
+  }
+
+  :deep(.el-pagination .btn-prev),
+  :deep(.el-pagination .btn-next) {
+    padding: 6px 10px;
+  }
+
+  :deep(.el-pagination .el-pager li) {
+    padding: 6px 8px;
+    margin: 0;
   }
 }
 </style>
